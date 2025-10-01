@@ -7,8 +7,13 @@ export default function App() {
 
   const loadChunk = async () => {
     setLoading(true);
-    const module = await import('./src/ChunkedComponent.jsx'); // <-- Code splitting
+
+    // Dynamic import with stable chunk name
+    const module = await import(
+      /* webpackChunkName: "ChunkedComponent" */ './src/ChunkedComponent.jsx'
+    );
     setComponent(() => module.default);
+
     setLoading(false);
   };
 

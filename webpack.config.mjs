@@ -1,47 +1,22 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import * as Repack from '@callstack/repack';
+
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default Repack.defineWebpackConfig({
-  context: __dirname,
+export default Repack.defineWebpackConfig((env) => ({
   entry: {
-    index: './index.js', // named entry
+    main: path.resolve(__dirname, 'index.js'),
   },
-  resolve: {
-    ...Repack.getResolveOptions(),
-  },
-  module: {
-    rules: [
-      {
-        test: /\.[cm]?[jt]sx?$/,
-        type: 'javascript/auto',
-        use: {
-          loader: '@callstack/repack/babel-swc-loader',
-          options: {},
-        },
-      },
-      ...Repack.getAssetTransformRules(),
-    ],
-  },
-  plugins: [
-    new Repack.RepackPlugin({
-      asyncChunkLoading: true,
-    }),
-  ],
+  mode: env === 'production' ? 'production' : 'development',
   optimization: {
     splitChunks: {
-      chunks: 'all',
-      minSize: 1000,
-      automaticNameDelimiter: '-',
+      chunks: 'async', // only split dynamic imports
     },
   },
-output: {
-  filename: (pathData) =>
-    pathData.chunk.name === 'index' ? 'index.bundle' : '[name].bundle',
-  chunkFilename: 'chunks/[name].chunk.bundle',
-  path: path.join(__dirname, 'dist'),
-},
-});
+  output: {
+    filename: '[name].[fullhash].bundle.js', // unique main bundle to avoid conflicts
+  },
+}));
